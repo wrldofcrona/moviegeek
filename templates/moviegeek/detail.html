@@ -7,6 +7,7 @@
 
             $.getJSON(url,
                 function(result) {
+                    console.log(result)
                     result.data.forEach(function(element, index, array) {
 
                         $.getJSON(get_url(element.target), function(result) {
@@ -44,8 +45,8 @@
                     result.data.forEach(function(element, index, array) {
 
                         $.getJSON(get_url(element.target), function(result) {
-                            image_url = 'http://image.tmdb.org/t/p/w500/'
-                            + result.movie_results[0].poster_path
+                            console.log(result)
+                            image_url = result.Poster;
 
                             rec_div = document.createElement('div')
                             rec_div.setAttribute('class', "col-sm-2 img-responsive")

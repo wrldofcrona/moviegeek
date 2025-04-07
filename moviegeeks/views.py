@@ -24,6 +24,8 @@ def index(request):
     page_number = request.GET.get("page", 1)
     page, page_end, page_start = handle_pagination(movies,
                                                    page_number)
+    
+    print("Page:", page)
 
     context_dict = {'movies': page,
                     'genres': genres,
@@ -38,7 +40,8 @@ def index(request):
 
 def handle_pagination(movies, page_number):
 
-    paginate_by = 18
+    paginate_by = 6
+
 
     paginator = Paginator(movies, paginate_by)
 
