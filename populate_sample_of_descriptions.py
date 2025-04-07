@@ -5,7 +5,7 @@ import json
 import requests
 import time
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'prs_project.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prs_project.settings")
 
 django.setup()
 
@@ -25,14 +25,14 @@ def get_descriptions():
         formated_url = url.format(start_year, api_key, page)
         print(formated_url)
         r = requests.get(formated_url)
-        for film in r.json()['results']:
-            id = film['id']
+        for film in r.json()["results"]:
+            id = film["id"]
             md = MovieDescriptions.objects.get_or_create(movie_id=id)[0]
 
             md.imdb_id = get_imdb_id(id)
-            md.title = film['title']
-            md.description = film['overview']
-            md.genres = film['genre_ids']
+            md.title = film["title"]
+            md.description = film["overview"]
+            md.genres = film["genre_ids"]
             if None != md.imdb_id:
                 md.save()
 
@@ -45,19 +45,19 @@ def save_as_csv():
     url = """http://www.omdbapi.com/?y=2024&apikey={}&page={}"""
     api_key = get_api_key()
 
-    file = open('data.json','w')
+    file = open("data.json","w")
 
     films = []
     for page in range(1, NUMBER_OF_PAGES):
         r = requests.get(url.format(api_key, page))
-        for film in r.json()['results']:
+        for film in r.json()["results"]:
             f = dict()
 
-            f['id'] = film['id']
-            f['imdb_id'] = get_imdb_id(f['id'])
-            f['title'] = film['title']
-            f['description'] = film['overview']
-            f['genres'] = film['genre_ids']
+            f["id"] = film["id"]
+            f["imdb_id"] = get_imdb_id(f["id"])
+            f["title"] = film["title"]
+            f["description"] = film["overview"]
+            f["genres"] = film["genre_ids"]
             films.append(f)
         print("{}: {}".format(page, r.json()))
 
@@ -87,11 +87,11 @@ def get_imdb_id(moviedb_id):
 def get_api_key():
     # Load credentials
     cred = json.loads(open(".prs").read())
-    return cred['omdb_apikey']
+    return cred["omdb_apikey"]
 
 
 def get_popular_films_for_genre(genre_str):
-    film_genres = {'drama': 18, 'action': 28, 'comedy': 35}
+    film_genres = {"drama": 18, "action": 28, "comedy": 35}
     genre = film_genres[genre_str]
 
     url = """http://www.omdbapi.com/?s={}&apikey={}"""
@@ -99,15 +99,15 @@ def get_popular_films_for_genre(genre_str):
     r = requests.get(url.format(genre, api_key))
     print(r.json())
     films = []
-    for film in r.json()['results']:
-        id = film['id']
+    for film in r.json()["results"]:
+        id = film["id"]
         imdb = get_imdb_id(id)
-        print("{} {}".format(imdb, film['title']))
+        print("{} {}".format(imdb, film["title"]))
         films.append(imdb[2:])
     print(films)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Starting MovieGeeks Population script...")
     get_descriptions()
     # get_popular_films_for_genre('comedy')
