@@ -83,11 +83,12 @@
                         document.getElementById('release_date').innerHTML =  result.Released
                         document.getElementById('lan').innerHTML =  result.Language
                         document.getElementById('avg_rating').innerHTML =  result.imdbRating
-                } )}
+                } )
+        }
                 
-        function item_bought()
-        {
-            add_impression({{user_id}}, 'buy', '{{ movie_id }}', '{{ session_id }}','{{ csrf_token }}')
+        function item_bought(){
+            add_impression({{user_id}}, 'buy', '{{ movie_id }}', '{{ session_id }}','{{ csrf_token }}');
+            console.log('item bought', '{{ movie_id }}');
         }
 
         $(document).ready(function() {

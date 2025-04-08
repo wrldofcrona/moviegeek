@@ -17,7 +17,7 @@
     <script src="{% static 'js/collector.js' %}"></script>
     <script>
         function get_url(movieid) {
-            return 'http://www.omdbapi.com/&i=tt' + movieid + '&apikey={{ api_key }}'
+            return 'http://www.omdbapi.com/?i=tt' + movieid + '&apikey={{ api_key }}'
         }
     </script>
 
@@ -41,7 +41,7 @@
 
                 <form class="navbar-form" action="/movies/search/">
                     <div class="form-group" style="display:inline;">
-                        <input type="text" class="form-control" placeholder="Search" name="q" style="bg-color='gray'" maxlength="40">
+                        <input type="text" class="form-control" placeholder="Search" name="q" style="background-color: gray;" maxlength="40">
                         <button class="input-group-addon" style="width: 40px"><i class="glyphicon glyphicon-search" title="Search"></i></button>
                     </div>
                   </form>
@@ -57,9 +57,9 @@
                     {% if genres %}
                     {% for genre in genres %}
                         <li> <a href="/movies/genre/{{genre.name}}"
-                                onclick="add_impression({{ user_id }}, 'genre:{{genre.name}}', 0
-                                        , '{{ session_id }}',
-                                        '{{ csrf_token }}')">{{ genre.name }}</a> </li>
+                                onclick="add_impression({{ user_id }} , 'genre:{{genre.name}}', 0,
+                                        '{{ session_id }}',
+                                        '{{ csrf_token }}', '')">{{ genre.name }}</a> </li>
                     {% endfor %}
                     {% endif %}
                     </ul>
