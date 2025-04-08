@@ -14,10 +14,10 @@
           });
 
         function getinfo(movie_id, title) {
-            url = 'https://api.themoviedb.org/3/find/tt' + movie_id + '?external_source=imdb_id&api_key={{ api_key }}'
+            url = 'http://www.omdbapi.com/?i=tt' + movie_id + '&apikey={{ api_key }}'
             $.getJSON(url,
                       function(result) {
-
+                        console.log(result);
                         if (result.movie_results != null)
                         {
                             img_tag =  document.getElementById('src_' + movie_id)

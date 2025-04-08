@@ -1,165 +1,96 @@
 {% extends "moviegeek/base.html" %}
 
 {% block head %}
-    <script>
-        $(document).ready(function(){
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="popover"]').popover();
 
-            $('[data-toggle="popover"]').popover();
+        $('.movie').on('show.bs.popover', function () {
+            var contentid;
+            contentid = $(this).attr("id");
+            add_impression({{ user_id }}, 'details', contentid, '{{ session_id }}', '{{ csrf_token }}');
+        });
+    });
 
-            $('.movie').on('show.bs.popover', function () {
-              var contentid;
-              contentid = $(this).attr("id");
-              add_impression({{ user_id }}, 'details', contentid, '{{ session_id }}',
-                                        '{{ csrf_token }}');
-            });
-          });
+    function get_cb_recs(userid) {
+        url = '/rec/cb/user/' + userid + '/'
+        element_name = 'cb_recs'
+        console.log("Fetching CB recommendations for user:", userid);
+        get_recs(url, element_name)
+    }
 
-          function get_cb_recs(userid) {
-            url = '/rec/cb/user/' + userid + '/'
-            element_name = 'cb_recs'
+    function get_cf_recs(userid) {
+        url = '/rec/cf/user/' + userid + '/'
+        element_name = 'cf_recs'
+        console.log("Fetching CF recommendations for user:", userid);
+        get_recs(url, element_name)
+    }
 
-            get_recs(url, element_name)
-        }
+    function get_recs(url, element_name) {
+        $.getJSON(url, function(result) {
+            console.log("Data received from", url, ":", result);
+            if ((result.data != null) && (result.data.length > 0)) {
+                recs = document.getElementById(element_name)
+                recs.style.display = 'block'
 
-        function get_cf_recs(userid) {
-            url = '/rec/cf/user/' + userid + '/'
-            element_name = 'cf_recs'
-
-            get_recs(url, element_name)
-        }
-
-        function get_recs(url, element_name) {
-            $.getJSON(url,
-                    function(result) {
-                        if ((result.data != null) && (result.data.length > 0)) {
-                            recs = document.getElementById(element_name)
-                            recs.style.display = 'block'
-
-                            result.data.forEach(function(element, index, array) {
-                                add_movie(element[0], recs)
-
-                            });
-
-                        }
-
-                    });
-        }
-
-        function add_movie(id, recs) {
-            $.getJSON(get_url(id), function(mov) {
-                image_url = 'http://image.tmdb.org/t/p/w500/'
-                + mov.movie_results[0].poster_path
-
-                rec_div = document.createElement('div')
-                rec_div.setAttribute('class', "col-sm-2 img-responsive")
-
-                a = document.createElement('a')
-                a.setAttribute('href', '/movies/movie/' + id)
-
-                img = document.createElement('img')
-                img.setAttribute('src', image_url)
-                img.setAttribute('class',"img-responsive")
-                img.setAttribute('title', mov.movie_results[0].title)
-                a.appendChild(img)
-
-                rec_div.appendChild(a)
-
-                recs.appendChild(rec_div)
-
-            })
-
-        }
-        function get_association_rule_recs(userid) {
-            url = '/rec/ar/' + userid + '/'
-
-            $.getJSON(url,
-                function(result) {
-                    if ((result.data != null) && (result.data.length > 0)) {
-                        recs = document.getElementById('association_rules_recs')
-                        recs.style.display = 'block'
-
-                        result.data.forEach(function(element, index, array) {
-
-                            add_movie(element.id, recs)
-
-                        });
-                    }
-
+                result.data.forEach(function(element, index, array) {
+                    add_movie(element[0], recs)
                 });
-        }
+            } else {
+                console.log("No data found for", element_name);
+            }
+        }).fail(function(jqxhr, textStatus, error) {
+            console.error("Request Failed: " + textStatus + ", " + error);
+        });
+    }
 
+    function add_movie(id, recs) {
+        $.getJSON(get_url(id), function(mov) {
+            console.log("Movie data received for ID", id, ":", mov);
+            image_url = 'http://image.tmdb.org/t/p/w500/' + mov.movie_results[0].poster_path
 
-        function getinfo(movie_id, title) {
-            url = 'https://api.themoviedb.org/3/find/tt' + movie_id + '?external_source=imdb_id&api_key={{ api_key }}'
-            $.getJSON(url,
-                      function(result) {
+            rec_div = document.createElement('div')
+            rec_div.setAttribute('class', "col-sm-2 img-responsive")
 
-                        if (result.movie_results != null)
-                        {
-                            img_tag =  document.getElementById('src_' + movie_id)
-                            image_url = 'http://image.tmdb.org/t/p/w500/'
-                            + result.movie_results[0].poster_path
+            a = document.createElement('a')
+            a.setAttribute('href', '/movies/movie/' + id)
 
-                            a = document.createElement("a");
-                            a.setAttribute('href', "/movies/movie/" + movie_id);
-                            a.setAttribute('onclick', "add_impression({{user_id}}, 'more_details', " +
-                                                      movie_id + ", '{{ session_id }}','{{ csrf_token }}')")
-                            a.innerHTML= 'more details'
+            img = document.createElement('img')
+            img.setAttribute('src', image_url)
+            img.setAttribute('class',"img-responsive")
+            img.setAttribute('title', mov.movie_results[0].title)
+            a.appendChild(img)
 
-                            save_for_later_a = document.createElement("a");
-                            save_for_later_a.setAttribute('onclick',
-                             "add_impression({{user_id}}, 'save_for_later', " + movie_id +
-                                              ", '{{ session_id }}','{{ csrf_token }}')")
-                            save_for_later_a.innerHTML = 'save for later';
+            rec_div.appendChild(a)
+            recs.appendChild(rec_div)
+        }).fail(function(jqxhr, textStatus, error) {
+            console.error("Request Failed: " + textStatus + ", " + error);
+        });
+    }
 
-                            popover_div = '<div style="width: 200px;">' +
-                                          '<strong>released:</strong> ' + result.movie_results[0].release_date + '<br />' +
-                                          '<strong>language:</strong> ' + result.movie_results[0].original_language + '<br />' +
-                                          '<strong>avg tweet rating</strong>: '+ result.movie_results[0].vote_average + '<br />' +
-                                          save_for_later_a.outerHTML + '<br />' +
-                                          a.outerHTML +
-                                          '</div>'
+    function get_association_rule_recs(userid) {
+        url = '/rec/ar/' + userid + '/'
+        console.log("Fetching Association Rule recommendations for user:", userid);
+        $.getJSON(url, function(result) {
+            console.log("Data received from", url, ":", result);
+            if ((result.data != null) && (result.data.length > 0)) {
+                recs = document.getElementById('association_rules_recs')
+                recs.style.display = 'block'
 
+                result.data.forEach(function(element, index, array) {
+                    add_movie(element.id, recs)
+                });
+            } else {
+                console.log("No data found for association rules recommendations");
+            }
+        }).fail(function(jqxhr, textStatus, error) {
+            console.error("Request Failed: " + textStatus + ", " + error);
+        });
+    }
 
-                            popover_content = 'amazing film <br/>' + a.outerHTML
-
-                            img = document.createElement("img");
-                            img.setAttribute('id', movie_id);
-                            img.setAttribute('class', 'movie img-rounded');
-                            img.setAttribute('src', image_url);
-                            img.setAttribute('style','padding: 0px 0px 0px 0px;height: 150px')
-                            img.setAttribute('title', title);
-
-                            div = document.createElement("div");
-                            div.setAttribute('class', 'col-xs-2');
-                            div.appendChild(img)
-
-                            document.createElement("div");
-
-                            div.setAttribute('onclick', "add_impression({{user_id}}, 'details', "
-                                                     + movie_id
-                                                     + ", '{{ session_id }}','{{ csrf_token }}')")
-
-                            $('#movies').append(div)
-
-                            $('#' + movie_id).popover({
-                                html: true,
-                                content: popover_div,
-                                trigger: 'click'
-                            })
-                        }
-                      }
-            )
-          }
-        {% if movies %}
-            {% for movie in movies %}
-                {% if movie.movie_id %}getinfo('{{movie.movie_id}}', '{{movie.title}}');{% endif %}
-            {% endfor %}
-        {% endif %}
-
-      function getTopContent() {
-
-          $.getJSON('/rec/chart', function(result) {
+    function getTopContent() {
+        $.getJSON('/rec/chart', function(result) {
+            console.log("Top content data received:", result);
             var ul = document.getElementById("top_content");
 
             result.data.forEach(function(element, index, array) {
@@ -171,20 +102,25 @@
                               + (index + 1) + ". "
                               + element.title + "</a>";
                 ul.appendChild(li)
-               });
-            })
-         };
-         $(document).on('click', function (e) {
-    $('[data-toggle="popover"],[data-original-title]').each(function () {
-        //the 'is' for buttons that trigger popups
-        //the 'has' for icons within a button that triggers a popup
-        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-            (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false  // fix for BS 3.3.6
-        }
+            });
+        }).fail(function(jqxhr, textStatus, error) {
+            console.error("Request Failed: " + textStatus + ", " + error);
+        });
+    }
 
+    $(document).on('click', function (e) {
+        $('[data-toggle="popover"],[data-original-title]').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false
+            }
+        });
     });
-});
-    </script>
+
+    getTopContent();
+    get_association_rule_recs({{user_id}})
+    get_cf_recs({{user_id}})
+    get_cb_recs({{user_id}})
+</script>
 {% endblock head %}
 
 {% block content %}
