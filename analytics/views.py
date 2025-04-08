@@ -222,7 +222,7 @@ def similarity_graph(request):
 def get_api_key():
     # Load credentials
     cred = json.loads(open(".prs").read())
-    return cred['themoviedb_apikey']
+    return cred['omdb_apikey']
 
 
 def get_statistics(request):

@@ -138,7 +138,7 @@ def dictfetchall(cursor):
 def get_api_key():
     # Load credentials
     cred = json.loads(open(".prs").read())
-    return cred['themoviedb_apikey']
+    return cred['omdb_apikey']
 
 
 def get_genres():
@@ -163,4 +163,3 @@ def user_id(request):
 
     print("ensured id: ", request.session['user_id'] )
     return request.session['user_id']
-

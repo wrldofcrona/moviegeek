@@ -1,13 +1,13 @@
 """prs_project URL Configuration"""
-from django.conf.urls import url, include
+from django.urls import include, path, re_path
 from django.contrib import admin
 from moviegeeks import views
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^movies/', include('moviegeeks.urls')),
-    url(r'^collect/', include('collector.urls')),
-    url(r'^analytics/', include('analytics.urls')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^rec/', include('recommender.urls'))
+    path('', views.index, name='index'),
+    path('movies/', include('moviegeeks.urls')),
+    path('collect/', include('collector.urls')),
+    path('analytics/', include('analytics.urls')),
+    re_path(r'^admin/', admin.site.urls),
+    path('rec/', include('recommender.urls'))
 ]
