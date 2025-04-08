@@ -12,7 +12,7 @@
                         $.getJSON(get_url(element.target), function(result) {
                             image_url = 'http://image.tmdb.org/t/p/w500/'
                             + result.movie_results[0].poster_path
-
+                            console.log(image_url)
                             rec_div = document.createElement('div')
                             rec_div.setAttribute('class', "col-sm-2 img-responsive")
 
@@ -70,23 +70,19 @@
         }
 
         function getinfo(movieid) {
-            url = 'https://api.themoviedb.org/3/find/tt' + movieid + '?external_source=imdb_id&api_key={{ api_key }}'
-
+            url = 'https://www.omdbapi.com?apikey={{ api_key }}&i=tt' + movieid;
             $.getJSON(url,
                       function(result) {
+                        console.log(result)
                         title_div = document.getElementById('title')
-                        title_div.innerHTML = '<strong>' + result.movie_results[0].title + '</strong>'
+                        title_div.innerHTML = '<strong>' + result.Title + '</strong>'
+                        image_url = result.Poster;
+                        document.getElementById('poster').setAttribute('src', image_url)
 
-
-                        image_url = 'http://image.tmdb.org/t/p/w500/'
-                            + result.movie_results[0].poster_path
-
-                        img_tag = document.getElementById('poster').setAttribute('src', image_url)
-
-                        document.getElementById('overview').innerHTML = result.movie_results[0].overview
-                        document.getElementById('release_date').innerHTML =  result.movie_results[0].release_date
-                        document.getElementById('lan').innerHTML =  result.movie_results[0].original_language
-                        document.getElementById('avg_rating').innerHTML =  result.movie_results[0].vote_average
+                        document.getElementById('overview').innerHTML = result.Plot
+                        document.getElementById('release_date').innerHTML =  result.Released
+                        document.getElementById('lan').innerHTML =  result.Language
+                        document.getElementById('avg_rating').innerHTML =  result.imdbRating
                 } )}
         function item_bought()
         {

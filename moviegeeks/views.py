@@ -18,13 +18,12 @@ def index(request):
         movies = selected.movies.order_by('-year', 'movie_id')
     else:
         movies = Movie.objects.order_by('-year', 'movie_id')
-
     genres = get_genres()
 
     page_number = request.GET.get("page", 1)
     page, page_end, page_start = handle_pagination(movies,
                                                    page_number)
-
+    print("Page: ", page)
     context_dict = {'movies': page,
                     'genres': genres,
                     'api_key': api_key,
@@ -38,7 +37,7 @@ def index(request):
 
 def handle_pagination(movies, page_number):
 
-    paginate_by = 18
+    paginate_by = 6
 
     paginator = Paginator(movies, paginate_by)
 
@@ -70,7 +69,6 @@ def genre(request, genre_id):
     page_number = request.GET.get("page", 1)
     page, page_end, page_start = handle_pagination(movies,
                                                    page_number)
-
     print(genres)
     context_dict = {'movies': page,
                     'genres': genres,
