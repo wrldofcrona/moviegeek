@@ -7,6 +7,7 @@
 
             $.getJSON(url,
                 function(result) {
+                    console.log(result)
                     result.data.forEach(function(element, index, array) {
 
                         $.getJSON(get_url(element.target), function(result) {
@@ -44,8 +45,8 @@
                     result.data.forEach(function(element, index, array) {
 
                         $.getJSON(get_url(element.target), function(result) {
-                            image_url = 'http://image.tmdb.org/t/p/w500/'
-                            + result.movie_results[0].poster_path
+                            console.log(result)
+                            image_url = result.Poster;
 
                             rec_div = document.createElement('div')
                             rec_div.setAttribute('class', "col-sm-2 img-responsive")
@@ -78,12 +79,12 @@
                         title_div.innerHTML = '<strong>' + result.Title + '</strong>'
                         image_url = result.Poster;
                         document.getElementById('poster').setAttribute('src', image_url)
-
                         document.getElementById('overview').innerHTML = result.Plot
                         document.getElementById('release_date').innerHTML =  result.Released
                         document.getElementById('lan').innerHTML =  result.Language
                         document.getElementById('avg_rating').innerHTML =  result.imdbRating
                 } )}
+                
         function item_bought()
         {
             add_impression({{user_id}}, 'buy', '{{ movie_id }}', '{{ session_id }}','{{ csrf_token }}')
