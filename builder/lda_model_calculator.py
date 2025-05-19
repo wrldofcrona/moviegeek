@@ -1,7 +1,7 @@
 import os
 import sqlite3
-import tqdm
-import psycopg2
+from tqdm import tqdm
+# import psycopg2
 from scipy.sparse import coo_matrix
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prs_project.settings")
@@ -78,7 +78,7 @@ class LdaModel(object):
         self.lda_path = self.dirname + '/../lda/'
         if not os.path.exists(self.lda_path):
             os.makedirs(self.lda_path)
-
+        print('data: ', data)
         self.build_lda_model(data, docs, NUM_TOPICS)
 
     @staticmethod
@@ -156,7 +156,7 @@ class LdaModel(object):
         conn= self.get_conn()
         cur = conn.cursor()
 
-        cur.execute('truncate table lda_similarity')
+        cur.execute('DELETE FROM lda_similarity')
 
         print(f'{coo.count_nonzero()} similarities to save')
         xs, ys = coo.nonzero()
@@ -170,7 +170,8 @@ class LdaModel(object):
             y_id = str(docs[y].movie_id)
             if sim < self.min_sim:
                 continue
-
+            created = created.strftime('%Y-%m-%d')
+            print("created: ", created)
             LdaSimilarity(created, x_id, y_id, sim).save()
             no_saved += 1
 

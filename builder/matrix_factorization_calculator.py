@@ -63,8 +63,8 @@ class MatrixFactorization(object):
         ensure_dir(save_path)
 
     def initialize_factors(self, ratings, k=25):
-        self.user_ids = set(ratings['user_id'].values)
-        self.movie_ids = set(ratings['movie_id'].values)
+        self.user_ids = list(ratings['user_id'].unique()) # Заменили set на list
+        self.movie_ids = list(ratings['movie_id'].unique()) # Заменили set на list
         self.item_counts = ratings[['movie_id', 'rating']].groupby('movie_id').count()
         self.item_counts = self.item_counts.reset_index()
 
@@ -104,7 +104,7 @@ class MatrixFactorization(object):
 
     def split_data(self, min_rank, ratings):
 
-        users = self.user_ids
+        users = set(self.user_ids) #Преобразуем в множество
 
         train_data_len = int((len(users) * 70 / 100))
         test_users = set(random.sample(users, (len(users) - train_data_len)))
@@ -129,8 +129,8 @@ class MatrixFactorization(object):
             test_data, train_data = self.split_data(10,
                                                     ratings_df)
             columns = ['user_id', 'movie_id', 'rating']
-            ratings = train_data[columns].as_matrix()
-            test = test_data[columns].as_matrix()
+            ratings = train_data[columns].to_numpy() #Преобразуем в numpy массив
+            test = test_data[columns].to_numpy()
 
             self.MAX_ITERATIONS = 10
             iterations = 0
@@ -186,7 +186,7 @@ class MatrixFactorization(object):
         self.initialize_factors(ratings_df, k)
         self.logger.info("training matrix factorization at {}".format(datetime.now()))
 
-        ratings = ratings_df[['user_id', 'movie_id', 'rating']].as_matrix()
+        ratings = ratings_df[['user_id', 'movie_id', 'rating']].to_numpy()
 
         index_randomized = random.sample(range(0, len(ratings)), (len(ratings) - 1))
 
@@ -304,7 +304,7 @@ def load_all_ratings(min_ratings=1):
     user_ids = user_count[user_count['movie_id'] > min_ratings]['user_id']
     ratings = ratings[ratings['user_id'].isin(user_ids)]
 
-    ratings['rating'] = ratings['rating'].astype(Decimal)
+    ratings['rating'] = ratings['rating'].apply(Decimal)
     return ratings
 
 
@@ -319,7 +319,7 @@ if __name__ == '__main__':
     logger = logging.getLogger('funkSVD')
     logger.info("[BEGIN] Calculating matrix factorization")
 
-    MF = MatrixFactorization(save_path='./models/funkSVD/{}/'.format(datetime.now()), max_iterations=40)
+    MF = MatrixFactorization(save_path='./models/funkSVD/'.format(datetime.now()), max_iterations=40)
     loaded_ratings = load_all_ratings(20)
     logger.info("using {} ratings".format(loaded_ratings.shape[0]))
     #MF.meta_parameter_train(loaded_ratings)
