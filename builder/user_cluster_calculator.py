@@ -13,6 +13,7 @@ mlt.use('TkAgg')
 import matplotlib.pyplot as plt
 
 import numpy as np
+from tqdm import tqdm
 
 django.setup()
 
@@ -102,7 +103,7 @@ class UserClusterCalculator(object):
         user_ratings = dok_matrix((num_users,
                                    len(content_ids)),
                                   dtype=np.float32)
-        for i in range(num_users):
+        for i in tqdm(range(num_users)):
             # each user corresponds to a row, in the order of all_user_names
             ratings = Rating.objects.filter(user_id=user_ids[i]['user_id'])
             for user_rating in ratings:
