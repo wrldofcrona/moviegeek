@@ -4,4 +4,10 @@ gensim
 tqdm
 pandas
 requests
-psycopg2-binary
+scikit-learn
+jupyter
+seaborn
+matplotlib
+pyLDAvis
+nltk
+stop_words
