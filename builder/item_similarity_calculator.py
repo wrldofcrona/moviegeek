@@ -198,6 +198,10 @@ def normalize(x):
     x = x.astype(float)
     x_sum = x.sum()
     x_num = x.astype(bool).sum()
+
+    if x_num == 0:
+        return 0.0
+
     x_mean = x_sum / x_num
 
     if x_num == 1 or x.std() == 0:

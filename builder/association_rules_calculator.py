@@ -17,7 +17,7 @@ def build_association_rules():
     data = retrieve_buy_events()
     data = generate_transactions(data)
 
-    data = calculate_support_confidence(data, 0.01)
+    data = calculate_support_confidence(data, 0.0001)
     save_rules(data)
 
 
