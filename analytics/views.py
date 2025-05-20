@@ -132,7 +132,10 @@ def lda(request):
 def cluster(request, cluster_id):
 
     members = Cluster.objects.filter(cluster_id=cluster_id)
-    member_ratings = Rating.objects.filter(user_id__in=members.values('user_id'))
+    # member_ratings = Rating.objects.filter(user_id__in=members.values('user_id'))
+    member_ids = [int(member.user_id) for member in members]
+    member_ratings = Rating.objects.filter(user_id__in=member_ids)
+
     movies = Movie.objects.filter(movie_id__in=member_ratings.values('movie_id'))
 
     ratings = {r.movie_id: r for r in member_ratings}
@@ -183,7 +186,7 @@ def top_content(request):
                         count(*) as sold\
                     FROM    collector_log log\
                     JOIN    moviegeeks_movie mov ON CAST(log.content_id AS INTEGER) = CAST(mov.movie_id AS INTEGER)\
-                    WHERE 	event like \'buy\' \
+                    WHERE   event like \'buy\' \
                     GROUP BY content_id, mov.title \
                     ORDER BY sold desc \
                     LIMIT 10 \

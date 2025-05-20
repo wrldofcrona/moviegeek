@@ -4,85 +4,27 @@ import django
 import json
 import requests
 import time
+from tqdm import tqdm
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prs_project.settings")
 
 django.setup()
 
 from recommender.models import MovieDescriptions
-
-NUMBER_OF_PAGES = 15
-start_year = "1970"
+from moviegeeks.models import Movie
 
 
-def get_descriptions():
-
-    url = """http://www.omdbapi.com/?y={}&apikey={}&page={}"""
+def get_imdb_movie(movie_id):
     api_key = get_api_key()
+    url = f'https://www.omdbapi.com?apikey={api_key}&i=tt{movie_id}'
 
-    # MovieDescriptions.objects.all().delete()
-
-    for page in range(1, NUMBER_OF_PAGES):
-        formated_url = url.format(start_year, api_key, page)
-        print(formated_url)
-        r = requests.get(formated_url)
-        for film in r.json()["results"]:
-            id = film["id"]
-            md = MovieDescriptions.objects.get_or_create(movie_id=id)[0]
-
-            md.imdb_id = get_imdb_id(id)
-            md.title = film["title"]
-            md.description = film["overview"]
-            md.genres = film["genre_ids"]
-            if None != md.imdb_id:
-                md.save()
-
-        time.sleep(1)
-
-        print("{}: {}".format(page, r.json()))
-
-
-def save_as_csv():
-    url = """http://www.omdbapi.com/?y=2024&apikey={}&page={}"""
-    api_key = get_api_key()
-
-    file = open("data.json", "w")
-
-    films = []
-    for page in range(1, NUMBER_OF_PAGES):
-        r = requests.get(url.format(api_key, page))
-        for film in r.json()["results"]:
-            f = dict()
-
-            f["id"] = film["id"]
-            f["imdb_id"] = get_imdb_id(f["id"])
-            f["title"] = film["title"]
-            f["description"] = film["overview"]
-            f["genres"] = film["genre_ids"]
-            films.append(f)
-        print("{}: {}".format(page, r.json()))
-
-    json.dump(films, file, sort_keys=True, indent=4)
-
-    file.close()
-
-
-def get_imdb_id(moviedb_id):
-    return "tt" + moviedb_id
-    # url = """http://www.omdbapi.com/?i={}&apikey={}"""
-    #
-    # r = requests.get(url.format(moviedb_id, get_api_key()))
-    #
-    # json = r.json()
-    # print(json)
-    # if 'imdb_id' not in json:
-    #     return ''
-    # imdb_id = json['imdb_id']
-    # if imdb_id is not None:
-    #     print(imdb_id)
-    #     return imdb_id[2:]
-    # else:
-    #     return ''
+    req = requests.get(url)
+    req_json = req.json()
+    if 'imdbID' not in req_json:
+        print('No such id: ', movie_id)
+        return None
+    else:
+        return req_json
 
 
 def get_api_key():
@@ -91,26 +33,41 @@ def get_api_key():
     return cred["omdb_apikey"]
 
 
-def get_popular_films_for_genre(genre_str):
-    film_genres = {"drama": 18, "action": 28, "comedy": 35}
-    genre = film_genres[genre_str]
+def populate_descriptions_omdb():
+    # MovieDescriptions.objects.all().delete()
+    all_movies = Movie.objects.all()
+    for movie in tqdm(all_movies):
+        _id = movie.movie_id
+        md = MovieDescriptions.objects.get_or_create(movie_id=_id)[0]
+        omdb_movie = get_imdb_movie(_id)
+        if None != omdb_movie:
+            md.imdb_id = omdb_movie["imdbID"]
+            md.title = omdb_movie["Title"]
+            md.description = omdb_movie["Plot"]
+            md.genres = omdb_movie["Genre"]
+            md.save()
 
-    url = """http://www.omdbapi.com/?s={}&apikey={}"""
-    api_key = get_api_key()
-    r = requests.get(url.format(genre, api_key))
-    print(r.json())
-    films = []
-    for film in r.json()["results"]:
-        id = film["id"]
-        imdb = get_imdb_id(id)
-        print("{} {}".format(imdb, film["title"]))
-        films.append(imdb[2:])
-    print(films)
+
+def populate_descriptions_csv():
+    import pandas as pd
+    df = pd.read_csv('data/IMDb_movies.csv')[['imdb_title_id', 'title', 'description', 'genre', 'avg_vote']]
+    df = df.sort_values(by='avg_vote', ascending=False).head(1000).reset_index(drop=True)
+    print(df.columns)
+
+    for _, row in tqdm(df[0:10000].iterrows()):
+        _id = row['imdb_title_id']
+        md = MovieDescriptions.objects.get_or_create(movie_id=_id)[0]
+        md.imdb_id = _id
+        md.title = row['title']
+        md.description = row['description']
+        md.genres = row['genre']
+        md.save()
+
 
 
 if __name__ == "__main__":
     print("Starting MovieGeeks Population script...")
-    get_descriptions()
-    # get_popular_films_for_genre('comedy')
-    # save_as_csv()
-    # get_imdb_id('0133093')
+    populate_descriptions_csv()
+    # populate_descriptions_omdb()
+    # m = get_imdb_movie('1234')
+    # print(m)

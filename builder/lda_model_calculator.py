@@ -1,12 +1,13 @@
 import os
 import sqlite3
 from tqdm import tqdm
-# import psycopg2
+import psycopg2
 from scipy.sparse import coo_matrix
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prs_project.settings")
 import django
 from datetime import datetime
+from django import db
 
 from prs_project import settings
 
@@ -157,10 +158,13 @@ class LdaModel(object):
         cur = conn.cursor()
 
         cur.execute('DELETE FROM lda_similarity')
+        conn.commit()
 
         print(f'{coo.count_nonzero()} similarities to save')
+        lda_id = 0
         xs, ys = coo.nonzero()
         for x, y in zip(xs, ys):
+            lda_id+=1
 
             if x == y:
                 continue
@@ -172,7 +176,7 @@ class LdaModel(object):
                 continue
             created = created.strftime('%Y-%m-%d')
             print("created: ", created)
-            LdaSimilarity(created, x_id, y_id, sim).save()
+            LdaSimilarity(lda_id, created, x_id, y_id, sim).save()
             no_saved += 1
 
         print('{} Similarity items saved, done in {} seconds'.format(no_saved, datetime.now() - start_time))
