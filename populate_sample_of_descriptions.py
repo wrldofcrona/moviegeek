@@ -56,7 +56,7 @@ def populate_descriptions_csv():
 
     for _, row in tqdm(df[0:10000].iterrows()):
         _id = row['imdb_title_id']
-        md = MovieDescriptions.objects.get_or_create(movie_id=_id)[0]
+        md = MovieDescriptions.objects.get_or_create(movie_id=_id[2:])[0]
         md.imdb_id = _id
         md.title = row['title']
         md.description = row['description']

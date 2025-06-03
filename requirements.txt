@@ -11,3 +11,5 @@ matplotlib
 pyLDAvis
 nltk
 stop_words
+statsmodels
+patsy

@@ -176,7 +176,7 @@ class EvaluationRunner(object):
 
         additional_training_data = test_temp[~test_temp.index.isin(test.index)]
 
-        train = train.append(additional_training_data)
+        train = pd.concat([train, additional_training_data])
 
         return test, train
 
